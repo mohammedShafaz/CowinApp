@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-6">
+                <h2 class="mb-4 mt-3" style="color:rgb(20, 124, 20) ; font-style: inherit; font-size: 38px;">Co-Win Slots</h2>
+
+                <select id="states" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" onchange="populateDistric()">
+                <option selected>Select State</option>
+               
+              </select>
+
+                <select id="districts" class="form-select form-select-sm" aria-label=".form-select-sm example">
+                <option selected>Select Distric</option>
+           
+              </select>
+                <input type="text" class="mt-3 mb-4" id="dateId" placeholder="enter date by dd-mm-yyyy">
+                <br>
+                <button class="btn btn-success mt-3" onclick="populateSlot()">Submit</button>
+
+            </div>
+            <div class="col-3"></div>
+
+        </div>
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-6">
+                <table class="table">
+
+                    <tbody id="result"></tbody>
+                </table>
+            </div>
+            <div class="col-3"></div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    var selected = document.querySelector("#states")
+    let state_data = []
+    let district_data = []
+    fetch("https://cdn-api.co-vin.in/api/v2/admin/location/states").
+    then(res => res.json()).
+    then(data => {
+        data.states.forEach(st => {
+
+            state_data.push(st)
+            let option = document.createElement("option")
+            option.text = st.state_name;
+            option.value = st.state_id;
+            selected.appendChild(option);
+        });
+    })
+
+    function populateDistric() {
+
+        var selectedD = document.querySelector("#districts");
+        let stateId = states.value;
+        fetch(`https://cdn-api.co-vin.in/api/v2/admin/location/districts/${stateId}`).
+        then(res => res.json()).
+        then(data => {
+            data.districts.forEach(dt => {
+                district_data.push(dt)
+                let option = document.createElement("option")
+                option.text = dt.district_name;
+                option.value = dt.district_id;
+                selectedD.appendChild(option)
+            })
+        })
+    }
+
+    function populateSlot() {
+        let dist_id = districts.value;
+        // console.log(dist_id);
+
+
+        let date = dateId.value;
+        // console.log(date);
+        let slot_data = []
+
+
+        fetch(`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${dist_id}&date=${date}`).
+        then(res => res.json()).
+        then(data => {
+            // console.log(data);
+            data.sessions.forEach(st => {
+                slot_data.push(st)
+
+                let htmlData = `
+            <tr>
+                        <th>center_id</th>
+                        <th>name</th>
+                        <th>address</th>
+                        <th>state_name</th>
+                        <th>district_name</th>
+                        <th>block_name</th>
+                        <th>pincode</th>
+                    </tr>
+
+                    <tr>
+                        <td>${st.center_id}</td>
+                        <td>${st.name}</td>
+                        <td>${st.address}</td>
+                        <td>${st.state_name}</td>
+                        <td>${st.district_name}</td>
+                        <td>${st.block_name}</td>
+                        <td>${st.pincode}</td>
+
+
+
+                        
+                        
+                        </tr>
+            `
+                document.querySelector("#result").innerHTML = htmlData
+
+            })
+
+        })
+    }
+</script>
+
+</html>
